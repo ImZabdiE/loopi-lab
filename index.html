@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loop-i Lab — Aprende electrónica con simulación y bloques</title>
+  <meta name="description" content="Plataforma web para aprender electrónica con simulación de circuitos, programación por bloques y exportación a C++ para Arduino y ESP32." />
+  <meta property="og:title" content="Loop-i Lab — Simula, programa y aprende" />
+  <meta property="og:description" content="Diseña circuitos, programa con bloques y exporta a C++. Ideal para estudiantes, autodidactas y docentes." />
+  <meta name="theme-color" content="#0f1216" />
+
+  <!-- Sprite de íconos inline: no dependencias externas -->
+  <svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;left:-9999px;top:-9999px">
+    <symbol id="ic-bolt" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></symbol>
+    <symbol id="ic-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.3l6.18 3.7-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></symbol>
+    <symbol id="ic-diagram" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="12" cy="19" r="3"/><path d="M8 6.5l4 9M16 6.5l-4 9"/></symbol>
+    <symbol id="ic-code" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l-4 4 4 4"/><path d="M16 8l4 4-4 4"/><path d="M14 4l-4 16"/></symbol>
+    <symbol id="ic-sim" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M12 2v2M7 2v2M17 2v2M12 20v2M7 20v2M17 20v2M2 12h2M20 12h2"/></symbol>
+    <symbol id="ic-play" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor" stroke="none"/></symbol>
+  </svg>
+
+  <style>
+    :root{
+      --brand:#fc4b08;        /* logo base */
+      --brand-light:#ffb28b;  /* acento claro */
+      --brand-dark:#b33000;   /* degradado profundo */
+      --accent:#ffd27f;       /* CTA cálido */
+      --bg:#0f1216;           /* fondo principal oscuro */
+      --bg-2:#0b0e11;         /* secciones */
+      --text:#e6e6e6;         /* texto principal */
+      --muted:#a0a0a0;        /* texto secundario */
+      --card:#1a1d21;         /* tarjetas */
+      --border:#21262d;       /* bordes */
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background: var(--bg); color: var(--text); line-height:1.6; }
+    a { color: inherit; text-decoration: none; }
+    .container{ width:min(1120px,92%); margin-inline:auto; }
+
+    /* Header */
+    header{ background: var(--brand); color:white; box-shadow:0 4px 12px rgba(0,0,0,.4); position:sticky; top:0; z-index:30; }
+    .nav{ display:flex; align-items:center; justify-content:space-between; padding:1rem 0; }
+    .logo{ font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:.5rem; }
+    nav ul{ list-style:none; display:flex; gap:1rem; margin:0; padding:0; align-items:center; }
+    nav a{ font-weight:600; }
+    .login-button{ background: var(--accent); color:#1a1d21; padding:.55rem 1rem; border-radius:8px; font-weight:700; }
+
+    /* Hero */
+    .hero{ background: linear-gradient(120deg, var(--brand-dark), var(--brand)); padding: 4.5rem 0 3.5rem; text-align:center; }
+    .hero h1{ font-size:clamp(2rem,5vw,3rem); margin:.3rem 0 .6rem; }
+    .hero p{ color:#ffeede; max-width:62ch; margin: 0 auto 1.5rem; }
+    .cta{ display:inline-flex; align-items:center; gap:.6rem; background:var(--accent); color:#15181d; padding:.8rem 1.4rem; border-radius:10px; font-weight:800; }
+
+    /* Sections */
+    .section{ padding:3rem 0; background:var(--bg); border-top:1px solid var(--border); }
+    .section.alt{ background:var(--bg-2); }
+    h2{ font-size:clamp(1.5rem,3vw,2.1rem); margin:0 0 .8rem; text-align:center; }
+    p.lead{ color:var(--muted); max-width:72ch; margin:.2rem auto 1.2rem; text-align:center; }
+
+    .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.2rem; margin-top:1.4rem; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.1rem; box-shadow:0 6px 22px rgba(0,0,0,.25); text-align:left; }
+    .card h3{ margin:.2rem 0 .5rem; color:var(--brand-light); }
+    .badge{ display:inline-block; background:#20130e; border:1px solid var(--border); color:#ffccae; padding:.25rem .5rem; border-radius:999px; font-size:.75rem; margin-bottom:.5rem; }
+    .icon{ width:1.6rem; height:1.6rem; color:var(--brand-light); }
+
+    .split{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.2rem; }
+    .codepane{ background:#0d1117; border:1px solid var(--border); border-radius:12px; padding:1rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:.92rem; color:#e6edf3; }
+    .codepane .title{ display:flex; justify-content:space-between; align-items:center; margin-bottom:.6rem; color:#9fb3c8; font-weight:700; }
+    .codepane pre{ margin:0; white-space:pre-wrap; }
+
+    .kv{ display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:1rem; }
+    .list{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1rem; }
+    .list ul{ margin:.3rem 0 0 1rem; padding:0; }
+
+    .cta-strip{ margin-top:1.8rem; background: linear-gradient(90deg, var(--brand), var(--brand-dark)); border:1px solid var(--border); border-radius:14px; padding:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; color:white; }
+
+    footer{ background: #080a0d; color:#8ea1b2; padding:2rem 0; border-top:1px solid var(--border); }
+    footer .links{ display:flex; gap:1rem; flex-wrap:wrap; }
+
+    @media (max-width: 900px){
+      .split{ grid-template-columns:1fr; }
+      .kv{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container nav">
+      <div class="logo"><svg class="icon" aria-hidden="true"><use href="#ic-sim"/></svg> Loop-i Lab</div>
+      <nav>
+        <ul>
+          <li><a href="#features">Características</a></li>
+          <li><a href="#publico">¿Para quién?</a></li>
+          <li><a href="#mvp">MVP</a></li>
+          <li><a href="#docentes">Docentes</a></li>
+          <li><a href="#faq">Comunidad/FAQ</a></li>
+          <li><a href="login.html" class="login-button">Iniciar sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <svg class="icon" aria-hidden="true" style="width:2rem;height:2rem;"><use href="#ic-bolt"/></svg>
+      <h1>Aprende electrónica sin fricción</h1>
+      <p>Diseña circuitos, programa con bloques tipo Blockly y exporta el código C++ para usarlos en Arduino UNO y ESP32. Ideal para estudiantes, autodidactas y docentes.</p>
+      <a href="#features" class="cta"><svg class="icon" aria-hidden="true"><use href="#ic-play"/></svg> Probar ahora</a>
+    </div>
+  </section>
+
+  <!-- Features claves -->
+  <section class="section alt" id="features">
+    <div class="container">
+      <h2><svg class="icon" aria-hidden="true"><use href="#ic-star"/></svg> Características clave</h2>
+      <p class="lead">Editor visual de circuitos, bloques → C++ y simulación básica para validar ideas rápido.</p>
+      <div class="cards">
+        <article class="card">
+          <span class="badge">Editor visual</span>
+          <h3><svg class="icon" aria-hidden="true"><use href="#ic-diagram"/></svg> Arrastra, conecta y nombra tus componentes</h3>
+          <p>LED, resistencia, botón, potenciómetro, servo y más. Cables con color personalizable y validación de puertos.</p>
+        </article>
+        <article class="card">
+          <span class="badge">Bloques → C++</span>
+          <h3><svg class="icon" aria-hidden="true"><use href="#ic-code"/></svg> Aprende viendo el código equivalente</h3>
+          <p>Construye la lógica con bloques y consulta el sketch .ino que se genera automáticamente.</p>
+        </article>
+        <article class="card">
+          <span class="badge">Simulación</span>
+          <h3><svg class="icon" aria-hidden="true"><use href="#ic-sim"/></svg> Visualiza estados y movimiento</h3>
+          <p>LED ON/OFF y PWM, servo a un ángulo fijo, lecturas básicas de entrada (botón/potenciómetro).</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bloques vs C++ demo -->
+  <section class="section" id="demo">
+    <div class="container">
+      <h2>De bloques a C++ — en un vistazo</h2>
+      <p class="lead">Comprende cómo se traduce tu lógica a un sketch real. Perfecto para dar el salto a la programación en texto.</p>
+      <div class="split">
+        <div class="codepane">
+          <div class="title"><span>Bloques</span><span>Vista previa</span></div>
+<pre>
+[ Al iniciar ]
+  configurar pin 9 como SALIDA
+[ Repetir por siempre ]
+  leer potenciómetro A0 → valor
+  brillo = map(valor, 0..1023 → 0..255)
+  analogWrite(9, brillo)
+</pre>
+        </div>
+        <div class="codepane">
+          <div class="title"><span>C++ generado</span><span>.ino</span></div>
+<pre>
+void setup(){
+  pinMode(9, OUTPUT);
+}
+
+void loop(){
+  int valor = analogRead(A0);
+  int brillo = map(valor, 0, 1023, 0, 255);
+  analogWrite(9, brillo);
+}
+</pre>
+        </div>
+      </div>
+      <div class="cta-strip">
+        <strong>¿Listo para probar?</strong>
+        <a href="#features" class="cta">Abrir demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ¿Para quién? -->
+  <section class="section alt" id="publico">
+    <div class="container">
+      <h2>¿Para quién está pensado?</h2>
+      <div class="cards">
+        <article class="card"><h3>Estudiantes</h3><p>Aprende lógica y electrónica paso a paso con bloques y simulación clara.</p></article>
+        <article class="card"><h3>Autodidactas</h3><p>Prototipa ideas, entiende C++ y exporta tus sketches para placas reales.</p></article>
+        <article class="card"><h3>Docentes</h3><p>Diseña prácticas reproducibles y comparte proyectos con tu grupo.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alcance del MVP -->
+  <section class="section" id="mvp">
+    <div class="container">
+      <h2>Qué incluye el MVP</h2>
+      <div class="kv">
+        <div class="list">
+          <strong>Componentes iniciales</strong>
+          <ul>
+            <li>LED, resistencia, botón, potenciómetro</li>
+            <li>Servo, buzzer</li>
+            <li>Sensores simples (p. ej., DHT simulado)</li>
+          </ul>
+        </div>
+        <div class="list">
+          <strong>Placas y energía</strong>
+          <ul>
+            <li>Arduino UNO (base), ESP32 (mapeo inicial)</li>
+            <li>Fuentes 3.3V/5V/9V/12V y GND (simulados)</li>
+          </ul>
+        </div>
+        <div class="list">
+          <strong>Programación</strong>
+          <ul>
+            <li>Bloques básicos: IO, control, variables, map</li>
+            <li>Vista C++ y exportación .ino</li>
+          </ul>
+        </div>
+        <div class="list">
+          <strong>Limitaciones del MVP</strong>
+          <ul>
+            <li>No emula el MCU real; simulación visual equivalente</li>
+            <li>Guardado local (LocalStorage) en la primera versión</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Para docentes -->
+  <section class="section alt" id="docentes">
+    <div class="container">
+      <h2>Para docentes y aulas</h2>
+      <p class="lead">Pensado para clases introductorias de electrónica y programación: objetivos claros, baja fricción y resultados visibles.</p>
+      <div class="cards">
+        <article class="card"><h3>Prácticas guiadas</h3><p>Secuencias listas para LED, PWM con potenciómetro y control de servo.</p></article>
+        <article class="card"><h3>Compartir proyectos</h3><p>Guarda y carga diseños. Próximamente: plantillas y colección de clase.</p></article>
+        <article class="card"><h3>Escalabilidad</h3><p>Transición natural de bloques a C++ y soporte futuro para Loop-i Lisa.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comunidad y FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <h2>Comunidad y preguntas frecuentes</h2>
+      <div class="kv">
+        <div class="list">
+          <strong>¿Es gratis?</strong>
+          <p class="lead" style="text-align:left">Sí, el MVP será gratuito. Podrían añadirse planes más adelante para instituciones.</p>
+          <strong>Requisitos</strong>
+          <ul>
+            <li>Navegador moderno (Chromium, Firefox, Safari)</li>
+            <li>Recomendado: escritorio o laptop</li>
+          </ul>
+        </div>
+        <div class="list">
+          <strong>Soporte</strong>
+          <p class="lead" style="text-align:left">Próximamente canal de Discord y documentación breve dentro de la app.</p>
+          <strong>Privacidad</strong>
+          <p class="lead" style="text-align:left">Guardado local en el navegador; sin registro obligatorio en el MVP.</p>
+        </div>
+      </div>
+      <div class="cta-strip" style="margin-top:1.4rem">
+        <div><strong>¿Quieres pilotear en tu clase?</strong><br/><span>Escríbenos y te invitamos a la beta docente.</span></div>
+        <a href="mailto:hola@loopi.lab" class="cta">Contactar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center">
+      <div>© <span id="year"></span> Loop-i Lab</div>
+      <div class="links">
+        <a href="#">Términos</a>
+        <a href="#">Privacidad</a>
+        <a href="login.html">Iniciar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
