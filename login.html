@@ -3,41 +3,77 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Loop‑i Lab — Iniciar sesión</title>
+  <title>Loop-i Lab — Iniciar sesión</title>
   <meta name="theme-color" content="#0f1216" />
   <style>
     :root{
-      --brand:#fc4b08;    /* naranja del logo */
-      --accent:#ffd27f;   /* acento cálido */
-      --bg:#0f1216;       /* fondo */
-      --panel:#151a21;    /* tarjeta */
-      --panel-2:#0d1117;  /* inputs */
-      --border:#21262d;   /* bordes */
-      --text:#e6e6e6;     /* texto */
-      --muted:#a0a0a0;    /* secundario */
+      --brand:#fc4b08;
+      --accent:#ffd27f;
+      --bg:#0f1216;
+      --panel:#151a21;
+      --panel-2:#0d1117;
+      --border:#21262d;
+      --text:#e6e6e6;
+      --muted:#a0a0a0;
       --ring: rgba(252,75,8,.35);
     }
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
-      margin:0; font-family:Poppins, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin:0;
+      font-family:Poppins, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background:
         radial-gradient(70% 40% at 10% 0%, rgba(252,75,8,.08), transparent 60%),
         radial-gradient(60% 35% at 90% 0%, rgba(252,75,8,.06), transparent 65%),
         var(--bg);
       color:var(--text);
-      display:grid; place-items:center; padding:1.5rem;
+      display:grid;
+      place-items:center;
+      padding:1.5rem;
     }
 
-    .wrap{ width:min(960px,100%); display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:center; }
-    .panel{
-      background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.35);
-      padding:1.6rem; position:relative;
+    .wrap{
+      width:min(960px,100%);
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:1.5rem;
+      align-items:center;
     }
-    .brand{ display:flex; align-items:center; gap:.6rem; font-weight:800; letter-spacing:.2px; color:#fff; text-decoration:none; }
-    .brand-badge{ inline-size:28px; block-size:28px; border-radius:8px; background:linear-gradient(135deg, var(--brand), #b33000); box-shadow:0 8px 22px rgba(252,75,8,.35); }
-    .back{ position:absolute; top:1rem; left:1rem; color:var(--muted); text-decoration:none; font-weight:600; }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+      padding:1.6rem;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight:800;
+      color:#fff;
+      text-decoration:none;
+    }
+    .brand-badge{
+      inline-size:28px;
+      block-size:28px;
+      border-radius:8px;
+      background:linear-gradient(135deg, var(--brand), #b33000);
+      box-shadow:0 8px 22px rgba(252,75,8,.35);
+    }
+
+    .back{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      color:var(--muted);
+      text-decoration:none;
+      font-weight:600;
+      margin-bottom:.8rem; /* Espacio extra */
+    }
     .back:hover{ color:#fff; }
 
     h1{ margin:.2rem 0 1rem; font-size:1.6rem; }
@@ -47,13 +83,14 @@
     label{ font-weight:600; font-size:.95rem; }
     .field{ position:relative; }
 
-    /* ✅ Unificar estilos sin importar el type (text/email/password) */
+    /* Unificar estilos sin importar el type */
     input,
     input[type="text"],
     input[type="email"],
     input[type="password"]{
       width:100%;
       padding:.75rem .9rem;
+      padding-right:2.2rem; /* espacio para el ojo */
       border-radius:10px;
       border:1px solid var(--border);
       background:var(--panel-2);
@@ -65,42 +102,91 @@
     }
     input::placeholder{ color:#8ea1b2; }
     input:focus{ border-color:#2b3440; box-shadow:0 0 0 4px var(--ring); }
-    /* Oculta el ojo nativo de Edge/IE para no duplicar */
     input::-ms-reveal{ display:none; }
 
+    /* Botón del ojo centrado verticalmente */
     .toggle-eye{
-      position:absolute; right:.6rem; top:50%; translate:0 -50%;
-      background:transparent; border:0; color:#b6c2d0; cursor:pointer; font-weight:700;
+      position:absolute;
+      right:.6rem;
+      top:0;
+      bottom:0;
+      display:flex;
+      align-items:center;
+      background:transparent;
+      border:0;
+      color:#b6c2d0;
+      cursor:pointer;
+      font-size:1rem;
+      line-height:1;
     }
 
-    .row{ display:flex; align-items:center; justify-content:space-between; gap:.8rem; flex-wrap:wrap; }
-    .checkbox{ display:flex; align-items:center; gap:.5rem; color:#c9d4e3; }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.8rem;
+      flex-wrap:wrap;
+    }
+    .checkbox{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      color:#c9d4e3;
+    }
     .checkbox input{ accent-color: var(--brand); }
 
-    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.6rem; padding:.8rem 1rem; border-radius:10px; border:1px solid transparent; font-weight:800; cursor:pointer; text-decoration:none; }
-    .btn-primary{ background:linear-gradient(90deg, var(--brand), #b33000); color:white; box-shadow:0 12px 28px rgba(252,75,8,.25); }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.6rem;
+      padding:.8rem 1rem;
+      border-radius:10px;
+      border:1px solid transparent;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .btn-primary{
+      background:linear-gradient(90deg, var(--brand), #b33000);
+      color:white;
+      box-shadow:0 12px 28px rgba(252,75,8,.25);
+    }
     .btn-primary:hover{ filter:brightness(1.05); }
-    .btn-ghost{ background:transparent; color:#c9d4e3; border-color:#2b3440; }
+    .btn-ghost{
+      background:transparent;
+      color:#c9d4e3;
+      border-color:#2b3440;
+    }
 
     .helper{ font-size:.9rem; color:var(--muted); text-align:center; margin-top:.6rem; }
 
     .side{
-      background:linear-gradient(180deg, rgba(252,75,8,.08), transparent), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><defs><pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0 L0 0 0 20" fill="none" stroke="%2321262d" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23g)"/></svg>') center/cover no-repeat;
-      border:1px solid var(--border); border-radius:14px; padding:2rem; display:grid; place-items:center; text-align:center;
+      background:linear-gradient(180deg, rgba(252,75,8,.08), transparent),
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><defs><pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0 L0 0 0 20" fill="none" stroke="%2321262d" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23g)"/></svg>')
+      center/cover no-repeat;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:2rem;
+      display:grid;
+      place-items:center;
+      text-align:center;
     }
     .side h2{ margin:0 0 .6rem; }
     .side p{ color:#cfd8e3; margin:0 0 1rem; max-width:40ch; }
 
-    @media (max-width: 900px){ .wrap{ grid-template-columns:1fr; } .side{ order:-1; } }
+    @media (max-width: 900px){
+      .wrap{ grid-template-columns:1fr; }
+      .side{ order:-1; }
+    }
   </style>
 </head>
 <body>
   <main class="wrap" aria-label="Autenticación">
-    <!-- Panel informativo -->
     <section class="side" aria-hidden="false">
       <a href="index.html" class="brand" aria-label="Volver al inicio">
         <span class="brand-badge" aria-hidden="true"></span>
-        <span>Loop‑i Lab</span>
+        <span>Loop-i Lab</span>
       </a>
       <div style="margin-top:1rem">
         <h2>Bienvenido de nuevo</h2>
@@ -109,7 +195,6 @@
       </div>
     </section>
 
-    <!-- Panel de login -->
     <section class="panel" aria-labelledby="title-login">
       <a href="index.html" class="back">← Inicio</a>
       <h1 id="title-login">Iniciar sesión</h1>
