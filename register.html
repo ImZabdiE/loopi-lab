@@ -20,7 +20,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 
-/* Centro absoluto del panel */
+/* Panel CENTRADO en pantalla */
 body{
   font-family:Poppins,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
   background:var(--bg);
@@ -32,7 +32,6 @@ body{
   padding:1.5rem;
 }
 
-/* Tarjeta */
 .panel{
   width:min(520px,100%);
   background:var(--panel);
@@ -55,35 +54,40 @@ label{
   margin-bottom:.4rem;
 }
 
-/* ===== Campo + ojo perfectamente centrado ===== */
+/* ===== Campo + ojo dentro y CENTRADO ===== */
 .field{
   position:relative;
   margin-bottom:1.1rem;
 }
 
-/* altura fija + padding derecho para el ojo */
 .field input{
   width:100%;
-  height:48px;                /* <- alto constante */
-  padding:0 40px 0 12px;      /* <- deja 40px a la derecha para el botón */
+  height:44px;                 /* alto consistente */
+  padding:0 44px 0 12px;       /* deja espacio para el ojo */
   border-radius:10px;
   border:1px solid var(--border);
   background:var(--panel-2);
   color:var(--text);
   outline:none;
-  line-height:44px;           /* centra el texto verticalmente */
+  line-height:44px;            /* centra el texto verticalmente */
 }
 .field input:focus{ border-color:#2b3440; box-shadow:0 0 0 4px var(--ring); }
 
-/* botón ojo dentro del input y centrado vertical */
+/* Botón ojo: ocupa del borde superior al inferior del input */
 .toggle-eye{
   position:absolute;
-  top:50%;
-  right:12px;
-  transform:translateY(-50%);
-  width:24px; height:24px;
-  display:flex; align-items:center; justify-content:center;
-  background:transparent; border:0; color:#b6c2d0; cursor:pointer;
+  right:8px;
+  top:1px;                     /* respeta el borde de 1px del input */
+  bottom:1px;                  /* idem */
+  width:28px;                  /* área click cómoda */
+  display:flex;
+  align-items:center;          /* centra vertical */
+  justify-content:center;      /* centra horizontal en su caja */
+  background:transparent;
+  border:0;
+  color:#b6c2d0;
+  cursor:pointer;
+  line-height:0;
 }
 .toggle-eye svg{ width:20px; height:20px; display:block; }
 
@@ -95,7 +99,7 @@ label{
 }
 .strength > span{ display:block; height:100%; width:0%; border-radius:4px; }
 
-/* Términos centrado y enlaces no azules */
+/* Términos centrado y enlaces personalizados */
 .terms{
   display:flex; align-items:center; justify-content:center;
   gap:.6rem; flex-wrap:wrap; margin:0 0 1.2rem;
@@ -114,7 +118,7 @@ label{
   content:"✓"; position:absolute; color:#fff; font-size:14px; left:2px; top:-1px;
 }
 
-/* Botón */
+/* Botón principal */
 .btn{
   display:flex; align-items:center; justify-content:center;
   width:100%; height:46px;
@@ -125,14 +129,14 @@ label{
 }
 .btn:hover{ filter:brightness(1.05); }
 
-/* Ayuda */
+/* Enlace inferior */
 .helper{
   text-align:center; margin-top:1rem; font-size:.92rem; color:#cbd3db;
 }
 .helper a{ color:#fff; text-decoration:none; }
 .helper a:hover{ text-decoration:underline; }
 
-/* Toasts (opcional, ya los tienes en login; dejo aquí por si quieres usar) */
+/* Toasts (por si los usas aquí también) */
 .toast-stack{ position:fixed; right:16px; bottom:16px; display:grid; gap:10px; z-index:9999; }
 .toast{
   display:flex; align-items:center; gap:.6rem;
@@ -189,6 +193,7 @@ label{
     </label>
 
     <button class="btn" type="submit">Crear cuenta</button>
+
     <div class="helper">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></div>
   </form>
 </div>
@@ -217,7 +222,7 @@ document.getElementById('password').addEventListener('input', e=>{
   strengthBar.style.background = colors[score-1] || '#333';
 });
 
-/* toasts util (por si quieres usar en validación) */
+/* util de toasts (si la quieres usar aquí) */
 function toast(type,msg){
   const stack=document.querySelector('.toast-stack');
   const el=document.createElement('div');
