@@ -1,176 +1,277 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Loop-i Lab — Crear cuenta</title>
-  <meta name="theme-color" content="#0f1216" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loop-i Lab — Registro</title>
+<meta name="theme-color" content="#0f1216" />
 
-  <!-- Sprite de iconos (ojo) -->
-  <svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;left:-9999px;top:-9999px">
-    <symbol id="icon-eye" viewBox="0 0 24 24">
-      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
-      </g>
-    </symbol>
-    <symbol id="icon-eye-off" viewBox="0 0 24 24">
-      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.2 20.2 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 7 11 7a20.4 20.4 0 0 1-3.13 4.18"/>
-        <path d="M3 3l18 18"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-      </g>
-    </symbol>
-  </svg>
+<style>
+:root{
+  --brand:#fc4b08;
+  --accent:#ffd27f;
+  --bg:#0f1216;
+  --panel:#151a21;
+  --panel-2:#0d1117;
+  --border:#21262d;
+  --text:#e6e6e6;
+  --muted:#a0a0a0;
+  --ring: rgba(252,75,8,.35);
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:Poppins,ui-sans-serif,system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:grid;
+  place-items:center;
+  padding:1.5rem;
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.35);
+  padding:1.6rem;
+  width:min(420px,100%);
+}
+h1{ margin-top:0; }
+label{ font-weight:600; font-size:.95rem; }
+.field{
+  display:grid;
+  position:relative;
+  margin-bottom:.9rem;
+}
+input{
+  width:100%;
+  padding:.75rem .9rem;
+  padding-right:2.8rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel-2);
+  color:var(--text);
+  outline:none;
+}
+input:focus{ border-color:#2b3440; box-shadow:0 0 0 4px var(--ring); }
+.toggle-eye{
+  grid-area:1 / 1;
+  justify-self:end;
+  align-self:center;
+  margin-right:.6rem;
+  width:2rem; height:2rem;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:0; color:#b6c2d0;
+  cursor:pointer; line-height:0; z-index:1;
+}
+.toggle-eye svg{ width:20px; height:20px; }
+.strength{
+  height:6px;
+  border-radius:4px;
+  background:#333;
+  margin-top:-6px;
+  margin-bottom:.9rem;
+}
+.strength span{
+  display:block;
+  height:100%;
+  border-radius:4px;
+}
+.terms{
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  font-size:0.92rem;
+  color:#c9d4e3;
+  margin-bottom:1rem;
+}
+.terms input[type="checkbox"]{
+  appearance:none;
+  width:18px; height:18px;
+  border:2px solid var(--border);
+  border-radius:4px;
+  background:var(--panel-2);
+  display:inline-block;
+  position:relative;
+  cursor:pointer;
+}
+.terms input[type="checkbox"]:checked{
+  background:var(--brand);
+  border-color:var(--brand);
+}
+.terms input[type="checkbox"]:checked::after{
+  content:"✓";
+  position:absolute;
+  color:white;
+  font-size:14px;
+  left:2px;
+  top:-1px;
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:.8rem 1rem;
+  border-radius:10px;
+  border:1px solid transparent;
+  font-weight:800;
+  cursor:pointer;
+  text-decoration:none;
+}
+.btn-primary{
+  background:linear-gradient(90deg,var(--brand),#b33000);
+  color:white;
+  box-shadow:0 12px 28px rgba(252,75,8,.25);
+}
+.btn-primary:hover{ filter:brightness(1.05); }
+.helper{ font-size:.9rem; color:var(--muted); margin-top:.6rem; text-align:center; }
+.helper a{ color:#fff; text-decoration:none; }
+.helper a:hover{ text-decoration:underline; }
 
-  <style>
-    :root{ --brand:#fc4b08; --accent:#ffd27f; --bg:#0f1216; --panel:#151a21; --panel-2:#0d1117; --border:#21262d; --text:#e6e6e6; --muted:#a0a0a0; --ring: rgba(252,75,8,.35); --ok:#4caf50; --bad:#f44336; }
-    *{ box-sizing:border-box; } html,body{ height:100%; }
-    body{ margin:0; font-family:Poppins, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(70% 40% at 10% 0%, rgba(252,75,8,.08), transparent 60%), radial-gradient(60% 35% at 90% 0%, rgba(252,75,8,.06), transparent 65%), var(--bg);
-      color:var(--text); display:grid; place-items:center; padding:1.5rem; }
-
-    .panel{ width:min(520px,100%); background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.35); padding:1.6rem; }
-    .back{ display:inline-flex; align-items:center; gap:.4rem; color:var(--muted); text-decoration:none; font-weight:600; margin-bottom:.8rem; } .back:hover{ color:#fff; }
-    h1{ margin:.2rem 0 1rem; font-size:1.6rem; } p.lead{ color:var(--muted); margin:.2rem 0 1.2rem; }
-
-    form{ display:grid; gap:.85rem; }
-    label{ font-weight:600; font-size:.95rem; }
-    .field{ display:grid; position:relative; } .field input{ grid-area:1 / 1; }
-    .toggle-eye{ grid-area:1 / 1; justify-self:end; align-self:center; margin-right:.6rem; width:2rem; height:2rem; display:flex; align-items:center; justify-content:center; background:transparent; border:0; color:#b6c2d0; cursor:pointer; line-height:0; z-index:1; }
-    .toggle-eye svg{ width:20px; height:20px; display:block; } .toggle-eye[aria-pressed="true"]{ color:var(--accent); }
-
-    input, input[type="text"], input[type="email"], input[type="password"]{
-      width:100%; padding:.75rem .9rem; padding-right:2.8rem; border-radius:10px; border:1px solid var(--border);
-      background:var(--panel-2); color:var(--text); outline:none; transition:border-color .15s, box-shadow .15s, background-color .15s; font:inherit; line-height:1.3;
-    }
-    input::placeholder{ color:#8ea1b2; } input:focus{ border-color:#2b3440; box-shadow:0 0 0 4px var(--ring); } input::-ms-reveal{ display:none; }
-
-    .terms{ display:flex; gap:.6rem; align-items:flex-start; font-size:.92rem; color:#c9d4e3; }
-    .terms input{ accent-color: var(--brand); margin-top:.25rem; }
-
-    .strength{ height:8px; background:#0b0e11; border:1px solid var(--border); border-radius:999px; overflow:hidden; }
-    .strength > span{ display:block; height:100%; width:0%; background:linear-gradient(90deg,#f44336,#ffc107,#4caf50); transition:width .25s ease; }
-
-    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.6rem; padding:.8rem 1rem; border-radius:10px; border:1px solid transparent; font-weight:800; cursor:pointer; text-decoration:none; }
-    .btn-primary{ background:linear-gradient(90deg, var(--brand), #b33000); color:white; box-shadow:0 12px 28px rgba(252,75,8,.25); } .btn-primary:hover{ filter:brightness(1.05); }
-    .btn-ghost{ background:transparent; color:#c9d4e3; border-color:#2b3440; }
-    .row{ display:flex; gap:1rem; justify-content:space-between; align-items:center; flex-wrap:wrap; }
-    .helper{ font-size:.9rem; color:var(--muted); text-align:center; margin-top:.6rem; }
-
-    /* Toasts */
-    .toast-stack{ position:fixed; right:16px; bottom:16px; display:grid; gap:10px; z-index:9999; }
-    .toast{ display:flex; align-items:center; gap:.6rem; min-width:260px; max-width:420px; padding:.8rem 1rem; border-radius:10px; border:1px solid var(--border); background:#11161b; color:var(--text); box-shadow:0 10px 28px rgba(0,0,0,.35); animation:toast-in .25s ease-out, toast-out .25s ease-in 3.5s forwards; }
-    .toast.success{ border-color: rgba(76,175,80,.35); box-shadow:0 10px 28px rgba(76,175,80,.15); }
-    .toast.error{ border-color: rgba(244,67,54,.35); box-shadow:0 10px 28px rgba(244,67,54,.15); }
-    .toast .dot{ inline-size:.6rem; block-size:.6rem; border-radius:50%; } .toast.success .dot{ background:#4caf50; } .toast.error .dot{ background:#f44336; }
-    .toast .msg{ line-height:1.35 } .toast button.toast-close{ margin-left:auto; background:transparent; border:0; color:#9fb3c8; cursor:pointer; font-size:1rem; line-height:1; }
-    @keyframes toast-in{ from{ transform:translateY(10px); opacity:0 } to{ transform:translateY(0); opacity:1 } }
-    @keyframes toast-out{ to{ transform:translateY(10px); opacity:0 } }
-  </style>
+/* Toasts */
+.toast-stack{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 10px;
+  z-index: 9999;
+}
+.toast{
+  display:flex; align-items:center; gap:.6rem;
+  min-width: 260px; max-width: 420px;
+  padding:.8rem 1rem;
+  border-radius: 10px;
+  border:1px solid var(--border);
+  background: #11161b;
+  color: var(--text);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+  animation: toast-in .25s ease-out, toast-out .25s ease-in 3.5s forwards;
+}
+.toast.success{ border-color: rgba(76,175,80,.35); }
+.toast.error{   border-color: rgba(244,67,54,.35); }
+.toast .dot{ inline-size:.6rem; block-size:.6rem; border-radius:50%; }
+.toast.success .dot{ background:#4caf50; }
+.toast.error .dot{   background:#f44336; }
+.toast button.toast-close{
+  margin-left:auto; background:transparent; border:0;
+  color:#9fb3c8; cursor:pointer; font-size:1rem;
+}
+@keyframes toast-in{ from{ transform: translateY(10px); opacity:0 } to{ transform:translateY(0); opacity:1 } }
+@keyframes toast-out{ to{ transform: translateY(10px); opacity:0 } }
+</style>
 </head>
 <body>
-  <main class="panel" aria-label="Registro">
-    <a href="login.html" class="back">← Volver al inicio de sesión</a>
-    <h1>Crear cuenta</h1>
-    <p class="lead">Regístrate para guardar y compartir tus proyectos. Podrás pasar de bloques a C++ cuando quieras.</p>
 
-    <form id="registerForm" novalidate>
-      <div class="field">
-        <label for="name">Nombre</label>
-        <input type="text" id="name" name="name" placeholder="Tu nombre" required />
-      </div>
+<div class="panel">
+  <h1>Crear cuenta</h1>
+  <form id="registerForm">
+    <div class="field">
+      <label for="name">Nombre</label>
+      <input type="text" id="name" name="name" placeholder="Tu nombre" required>
+    </div>
+    <div class="field">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" required>
+    </div>
+    <div class="field">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" required>
+      <button type="button" class="toggle-eye" aria-label="Mostrar u ocultar" aria-pressed="false" onclick="togglePassword(this,'password')">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/></svg>
+      </button>
+    </div>
+    <div class="strength"><span></span></div>
+    <div class="field">
+      <label for="confirm">Confirmar contraseña</label>
+      <input type="password" id="confirm" name="confirm" required>
+      <button type="button" class="toggle-eye" aria-label="Mostrar u ocultar" aria-pressed="false" onclick="togglePassword(this,'confirm')">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/></svg>
+      </button>
+    </div>
+    <label class="terms">
+      <input type="checkbox" id="terms"> Acepto los <a href="#">Términos</a> y la <a href="#">Política de privacidad</a>.
+    </label>
+    <button class="btn btn-primary" type="submit">Crear cuenta</button>
+    <div class="helper">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </div>
+  </form>
+</div>
 
-      <div class="field">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" required autocomplete="email" />
-      </div>
+<div class="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
-      <div class="field">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password" />
-        <button type="button" class="toggle-eye" aria-label="Mostrar/ocultar contraseña" onclick="toggleEye(this,'password')"><svg><use href="#icon-eye"/></svg></button>
-      </div>
+<script>
+const form = document.getElementById('registerForm');
+const strengthBar = document.querySelector('.strength span');
 
-      <div class="strength" aria-hidden="true"><span id="strengthBar"></span></div>
+function togglePassword(btn,id){
+  const input = document.getElementById(id);
+  const showing = input.type === 'password';
+  input.type = showing ? 'text' : 'password';
+  btn.setAttribute('aria-pressed', showing ? 'true' : 'false');
+}
 
-      <div class="field">
-        <label for="confirm">Confirmar contraseña</label>
-        <input type="password" id="confirm" name="confirm" placeholder="Repite tu contraseña" required minlength="8" autocomplete="new-password" />
-        <button type="button" class="toggle-eye" aria-label="Mostrar/ocultar confirmación" onclick="toggleEye(this,'confirm')"><svg><use href="#icon-eye"/></svg></button>
-      </div>
+function showToast(type, text){
+  const stack = document.querySelector('.toast-stack');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="dot"></span><div class="msg">${text}</div><button class="toast-close">✕</button>`;
+  toast.querySelector('.toast-close').onclick = () => {
+    toast.style.animation = 'toast-out .2s ease-in forwards';
+    setTimeout(()=> toast.remove(), 180);
+  };
+  toast.addEventListener('animationend', e => {
+    if(e.animationName==='toast-out') toast.remove();
+  });
+  stack.appendChild(toast);
+}
 
-      <label class="terms">
-        <input type="checkbox" id="terms" required />
-        <span>Acepto los <a href="#" class="btn-ghost" style="padding:0 .2rem;border-radius:6px">Términos</a> y la <a href="#" class="btn-ghost" style="padding:0 .2rem;border-radius:6px">Política de privacidad</a>.</span>
-      </label>
+document.getElementById('password').addEventListener('input', e=>{
+  const val = e.target.value;
+  let score = 0;
+  if(val.length >= 6) score++;
+  if(/[A-Z]/.test(val)) score++;
+  if(/[0-9]/.test(val)) score++;
+  if(/[^A-Za-z0-9]/.test(val)) score++;
+  const colors = ['#f44336','#ff9800','#ffc107','#4caf50'];
+  strengthBar.style.width = (score*25)+'%';
+  strengthBar.style.background = colors[score-1] || '#333';
+});
 
-      <div class="row">
-        <button class="btn btn-primary" type="submit">Crear cuenta</button>
-        <a href="login.html" class="btn-ghost" style="padding:.5rem .8rem;border-radius:8px">¿Ya tienes cuenta? Inicia sesión</a>
-      </div>
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = form.name.value.trim();
+  const email = form.email.value.trim();
+  const pass = form.password.value;
+  const confirm = form.confirm.value;
+  const terms = document.getElementById('terms').checked;
 
-      <div class="helper" id="msg" role="status" aria-live="polite"></div>
-    </form>
-  </main>
+  if(!name || !email || !pass || !confirm){
+    showToast('error','Completa todos los campos.');
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('error','Correo inválido.');
+    return;
+  }
+  if(pass.length < 6){
+    showToast('error','La contraseña debe tener al menos 6 caracteres.');
+    return;
+  }
+  if(pass !== confirm){
+    showToast('error','Las contraseñas no coinciden.');
+    return;
+  }
+  if(!terms){
+    showToast('error','Debes aceptar los términos.');
+    return;
+  }
 
-  <div class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+  showToast('success','✅ Registro exitoso. Redirigiendo…');
+  setTimeout(()=>{ window.location.href = 'login.html'; }, 900);
+});
+</script>
 
-  <script>
-    const form = document.getElementById('registerForm');
-    const msg  = document.getElementById('msg');
-    const bar  = document.getElementById('strengthBar');
-
-    function showToast(type, text){
-      const stack = document.querySelector('.toast-stack');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `<span class="dot" aria-hidden="true"></span><div class="msg">${text}</div><button class="toast-close" aria-label="Cerrar">✕</button>`;
-      toast.querySelector('.toast-close').onclick = () => { toast.style.animation = 'toast-out .2s ease-in forwards'; setTimeout(()=> toast.remove(), 180); };
-      toast.addEventListener('animationend', (e)=>{ if(e.animationName === 'toast-out') toast.remove(); });
-      stack.appendChild(toast);
-    }
-
-    function toggleEye(btn, id){
-      const input = document.getElementById(id);
-      const showing = input.type === 'password';
-      input.type = showing ? 'text' : 'password';
-      btn.setAttribute('aria-pressed', showing ? 'true' : 'false');
-      const use = btn.querySelector('use');
-      use.setAttribute('href', showing ? '#icon-eye-off' : '#icon-eye');
-      input.focus({preventScroll:true});
-    }
-
-    // medidor de fuerza básico
-    const pwd = document.getElementById('password');
-    pwd.addEventListener('input', ()=>{
-      const v = pwd.value;
-      let score = 0;
-      if(v.length >= 8) score++;
-      if(/[A-Z]/.test(v)) score++;
-      if(/[a-z]/.test(v)) score++;
-      if(/[0-9]/.test(v)) score++;
-      if(/[^A-Za-z0-9]/.test(v)) score++;
-      bar.style.width = (Math.min(score,5)/5)*100 + '%';
-    });
-
-    form.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      msg.textContent = '';
-
-      const name = form.name.value.trim();
-      const email = form.email.value.trim();
-      const pass = form.password.value;
-      const conf = form.confirm.value;
-      const terms = form.terms.checked;
-
-      if(!name){ showToast('error','Por favor, escribe tu nombre.'); return; }
-      if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showToast('error','Correo inválido.'); return; }
-      if(pass.length < 8){ showToast('error','La contraseña debe tener al menos 8 caracteres.'); return; }
-      if(pass !== conf){ showToast('error','Las contraseñas no coinciden.'); return; }
-      if(!terms){ showToast('error','Debes aceptar los Términos y la Privacidad.'); return; }
-
-      showToast('success','🎉 Cuenta creada (simulado). Te redirigimos al login…');
-      setTimeout(()=>{ window.location.href = 'login.html'; }, 1200);
-    });
-  </script>
 </body>
 </html>
