@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loop‑i Lab — Iniciar sesión</title>
+  <meta name="theme-color" content="#0f1216" />
+  <style>
+    :root{
+      --brand:#fc4b08;
+      --bg:#0f1216;
+      --card:#1a1d21;
+      --border:#21262d;
+      --text:#e6e6e6;
+      --accent:#ffd27f;
+    }
+    body{margin:0;font-family:Poppins, sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:center;height:100vh;}
+    .login-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:340px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+    h1{text-align:center;margin-bottom:1.2rem;color:var(--brand);}
+    label{display:block;margin:.6rem 0 .3rem;}
+    input{width:100%;padding:.6rem;border-radius:6px;border:1px solid var(--border);background:#0b0e11;color:var(--text);}
+    button{width:100%;margin-top:1rem;padding:.7rem;background:var(--brand);color:white;font-weight:700;border:none;border-radius:8px;cursor:pointer;}
+    button:hover{background:#e04307;}
+    .links{text-align:center;margin-top:1rem;}
+    .links a{color:var(--accent);font-size:.9rem;}
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Iniciar sesión</h1>
+    <form>
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" required>
+
+      <button type="submit">Entrar</button>
+    </form>
+    <div class="links">
+      <a href="#">¿Olvidaste tu contraseña?</a>
+    </div>
+  </div>
+</body>
+</html>
