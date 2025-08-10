@@ -35,9 +35,7 @@
       background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.35);
       padding:1.6rem; position:relative;
     }
-    .brand{
-      display:flex; align-items:center; gap:.6rem; font-weight:800; letter-spacing:.2px; color:#fff; text-decoration:none;
-    }
+    .brand{ display:flex; align-items:center; gap:.6rem; font-weight:800; letter-spacing:.2px; color:#fff; text-decoration:none; }
     .brand-badge{ inline-size:28px; block-size:28px; border-radius:8px; background:linear-gradient(135deg, var(--brand), #b33000); box-shadow:0 8px 22px rgba(252,75,8,.35); }
     .back{ position:absolute; top:1rem; left:1rem; color:var(--muted); text-decoration:none; font-weight:600; }
     .back:hover{ color:#fff; }
@@ -48,15 +46,31 @@
     form{ display:grid; gap:.85rem; }
     label{ font-weight:600; font-size:.95rem; }
     .field{ position:relative; }
-    input[type="email"], input[type="password"]{
-      width:100%; padding:.75rem .9rem; border-radius:10px; border:1px solid var(--border); background:var(--panel-2);
-      color:var(--text); outline:none; transition:border-color .15s ease, box-shadow .15s ease;
+
+    /* ✅ Unificar estilos sin importar el type (text/email/password) */
+    input,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding:.75rem .9rem;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      color:var(--text);
+      outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+      font: inherit;
+      line-height:1.3;
     }
     input::placeholder{ color:#8ea1b2; }
     input:focus{ border-color:#2b3440; box-shadow:0 0 0 4px var(--ring); }
+    /* Oculta el ojo nativo de Edge/IE para no duplicar */
+    input::-ms-reveal{ display:none; }
 
     .toggle-eye{
-      position:absolute; right:.6rem; top:50%; translate:0 -50%; background:transparent; border:0; color:#b6c2d0; cursor:pointer; font-weight:700;
+      position:absolute; right:.6rem; top:50%; translate:0 -50%;
+      background:transparent; border:0; color:#b6c2d0; cursor:pointer; font-weight:700;
     }
 
     .row{ display:flex; align-items:center; justify-content:space-between; gap:.8rem; flex-wrap:wrap; }
@@ -110,7 +124,7 @@
         <div class="field">
           <label for="password">Contraseña</label>
           <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6" autocomplete="current-password" />
-          <button type="button" class="toggle-eye" aria-label="Mostrar u ocultar contraseña" onclick="togglePassword()">👁️</button>
+          <button type="button" class="toggle-eye" aria-label="Mostrar u ocultar contraseña" aria-pressed="false" onclick="togglePassword(this)">👁️</button>
         </div>
 
         <div class="row">
@@ -128,9 +142,13 @@
     const form = document.getElementById('loginForm');
     const msg = document.getElementById('msg');
 
-    function togglePassword(){
+    function togglePassword(btn){
       const input = document.getElementById('password');
-      input.type = input.type === 'password' ? 'text' : 'password';
+      const showing = input.type === 'password';
+      input.type = showing ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', showing ? 'true' : 'false');
+      btn.textContent = showing ? '🙈' : '👁️';
+      input.focus({preventScroll:true});
     }
 
     form.addEventListener('submit', (e)=>{
@@ -147,7 +165,6 @@
         msg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
         return;
       }
-      // Simulación de éxito del login (MVP sin backend)
       msg.textContent = '✅ Inicio de sesión simulado. Redirigiendo…';
       setTimeout(()=>{ window.location.href = 'index.html'; }, 900);
     });
