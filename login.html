@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Loop-i Lab — Iniciar sesión</title>
   <meta name="theme-color" content="#0f1216" />
+
+  <!-- Sprite de iconos inline -->
+  <svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;left:-9999px;top:-9999px">
+    <!-- Ojo -->
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </g>
+    </symbol>
+    <!-- Ojo tachado -->
+    <symbol id="icon-eye-off" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.2 20.2 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 7 11 7a20.4 20.4 0 0 1-3.13 4.18"/>
+        <path d="M3 3l18 18"/>
+        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+      </g>
+    </symbol>
+  </svg>
+
   <style>
     :root{
       --brand:#fc4b08;
@@ -65,6 +85,7 @@
       box-shadow:0 8px 22px rgba(252,75,8,.35);
     }
 
+    /* Enlace “Inicio” separado del título */
     .back{
       display:inline-flex;
       align-items:center;
@@ -72,7 +93,7 @@
       color:var(--muted);
       text-decoration:none;
       font-weight:600;
-      margin-bottom:.8rem; /* Espacio extra */
+      margin-bottom:.8rem;
     }
     .back:hover{ color:#fff; }
 
@@ -83,14 +104,14 @@
     label{ font-weight:600; font-size:.95rem; }
     .field{ position:relative; }
 
-    /* Unificar estilos sin importar el type */
+    /* Unificar estilos sin importar el type (text/email/password) */
     input,
     input[type="text"],
     input[type="email"],
     input[type="password"]{
       width:100%;
       padding:.75rem .9rem;
-      padding-right:2.2rem; /* espacio para el ojo */
+      padding-right:2.4rem; /* espacio para el ojo */
       border-radius:10px;
       border:1px solid var(--border);
       background:var(--panel-2);
@@ -104,21 +125,24 @@
     input:focus{ border-color:#2b3440; box-shadow:0 0 0 4px var(--ring); }
     input::-ms-reveal{ display:none; }
 
-    /* Botón del ojo centrado verticalmente */
+    /* Botón del ojo: ocupa el alto del input y centra con flex */
     .toggle-eye{
       position:absolute;
       right:.6rem;
-      top:0;
-      bottom:0;
+      top:1px;                /* respeta el borde superior del input */
+      bottom:1px;             /* respeta el borde inferior del input */
+      width:2rem;             /* área clickeable cómoda */
       display:flex;
       align-items:center;
+      justify-content:center;
       background:transparent;
       border:0;
       color:#b6c2d0;
       cursor:pointer;
-      font-size:1rem;
-      line-height:1;
+      line-height:0;          /* elimina “baseline” de texto */
     }
+    .toggle-eye svg{ width:20px; height:20px; display:block; }
+    .toggle-eye[aria-pressed="true"]{ color:var(--accent); }
 
     .row{
       display:flex;
@@ -209,7 +233,9 @@
         <div class="field">
           <label for="password">Contraseña</label>
           <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6" autocomplete="current-password" />
-          <button type="button" class="toggle-eye" aria-label="Mostrar u ocultar contraseña" aria-pressed="false" onclick="togglePassword(this)">👁️</button>
+          <button type="button" class="toggle-eye" aria-label="Mostrar u ocultar contraseña" aria-pressed="false" onclick="togglePassword(this)">
+            <svg aria-hidden="true" class="eye"><use href="#icon-eye"/></svg>
+          </button>
         </div>
 
         <div class="row">
@@ -232,7 +258,9 @@
       const showing = input.type === 'password';
       input.type = showing ? 'text' : 'password';
       btn.setAttribute('aria-pressed', showing ? 'true' : 'false');
-      btn.textContent = showing ? '🙈' : '👁️';
+      // cambia el ícono
+      const use = btn.querySelector('use');
+      use.setAttribute('href', showing ? '#icon-eye-off' : '#icon-eye');
       input.focus({preventScroll:true});
     }
 
