@@ -26,7 +26,7 @@
       --brand-dark:#b33000;   /* degradado profundo */
       --accent:#ffd27f;       /* CTA cálido */
       --bg:#0f1216;           /* fondo principal oscuro */
-      --bg-2:#0b0e11;         /* secciones */
+      --bg-2:#0b0e11;         /* secciones alternas */
       --text:#e6e6e6;         /* texto principal */
       --muted:#a0a0a0;        /* texto secundario */
       --card:#1a1d21;         /* tarjetas */
@@ -43,6 +43,7 @@
     .logo{ font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:.5rem; }
     nav ul{ list-style:none; display:flex; gap:1rem; margin:0; padding:0; align-items:center; }
     nav a{ font-weight:600; }
+    .btn-pill{ background:transparent; border:1px solid rgba(255,255,255,.6); color:white; padding:.45rem .9rem; border-radius:999px; font-weight:700; }
     .login-button{ background: var(--accent); color:#1a1d21; padding:.55rem 1rem; border-radius:8px; font-weight:700; }
 
     /* Hero */
@@ -95,7 +96,8 @@
           <li><a href="#mvp">MVP</a></li>
           <li><a href="#docentes">Docentes</a></li>
           <li><a href="#faq">Comunidad/FAQ</a></li>
-          <li><a href="login.html" class="login-button">Iniciar sesión</a></li>
+          <li><a href="editor.html" class="btn-pill" rel="noopener">Editor</a></li>
+          <li><a href="login.html" class="login-button" rel="noopener">Iniciar sesión</a></li>
         </ul>
       </nav>
     </div>
@@ -107,7 +109,7 @@
       <svg class="icon" aria-hidden="true" style="width:2rem;height:2rem;"><use href="#ic-bolt"/></svg>
       <h1>Aprende electrónica sin fricción</h1>
       <p>Diseña circuitos, programa con bloques tipo Blockly y exporta el código C++ para usarlos en Arduino UNO y ESP32. Ideal para estudiantes, autodidactas y docentes.</p>
-      <a href="#features" class="cta"><svg class="icon" aria-hidden="true"><use href="#ic-play"/></svg> Probar ahora</a>
+      <a href="editor.html" class="cta" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#ic-play"/></svg> Probar ahora</a>
     </div>
   </section>
 
@@ -170,7 +172,7 @@ void loop(){
       </div>
       <div class="cta-strip">
         <strong>¿Listo para probar?</strong>
-        <a href="#features" class="cta">Abrir demo</a>
+        <a href="editor.html" class="cta" rel="noopener">Abrir demo</a>
       </div>
     </div>
   </section>
@@ -273,7 +275,8 @@ void loop(){
       <div class="links">
         <a href="#">Términos</a>
         <a href="#">Privacidad</a>
-        <a href="login.html">Iniciar sesión</a>
+        <a href="editor.html" rel="noopener">Editor</a>
+        <a href="login.html" rel="noopener">Iniciar sesión</a>
       </div>
     </div>
   </footer>
