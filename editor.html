@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loop-i Lab — Editor (cables + undo/redo)</title>
+<style>
+  :root{
+    --bg:#0f1216; --surface:#151a21; --panel:#0d1117; --border:#21262d;
+    --text:#e6e6e6; --muted:#9fb3c8; --brand:#fc4b08; --brand-dark:#b33000; --accent:#ffd27f;
+    --shadow: 0 8px 20px rgba(0,0,0,.25);
+    --shadow-strong: 0 12px 26px rgba(0,0,0,.32);
+    --ring:#6ea8ff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; display:grid; grid-template-columns:1fr 320px; grid-template-rows:56px 1fr;
+    grid-template-areas:"topbar topbar" "canvas palette";
+    font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:var(--bg); color:var(--text);
+  }
+  .topbar{
+    grid-area:topbar; display:flex; align-items:center; gap:.6rem;
+    padding:.5rem .8rem; background:var(--surface); border-bottom:1px solid var(--border);
+  }
+  .btn{
+    background:var(--panel); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:.45rem .7rem; cursor:pointer; font-weight:600;
+    display:inline-flex; align-items:center; gap:.5rem; box-shadow:var(--shadow);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, filter 180ms ease;
+    will-change: transform;
+  }
+  .btn.icon{ padding:.45rem; width:38px; height:38px; justify-content:center; }
+  .btn.primary{
+    background:linear-gradient(90deg,var(--brand),var(--brand-dark));
+    border:1px solid transparent;
+    box-shadow:0 8px 20px rgba(252,75,8,.22);
+  }
+  /* Hover / Active */
+  .btn:hover{ transform: translateY(-1.5px); box-shadow:var(--shadow-strong); border-color:#2d3843; filter:brightness(1.02); }
+  .btn:active{ transform: translateY(0); box-shadow:var(--shadow); filter:brightness(0.98); }
+  /* Focus visible */
+  .btn:focus-visible{ outline:2px solid var(--ring); outline-offset:2px; }
+  /* Respeto a reduce motion */
+  @media (prefers-reduced-motion: reduce){
+    .btn{ transition:none }
+  }
+
+  .canvas-wrap{ grid-area:canvas; position:relative; overflow:hidden; background:var(--panel); border-right:1px solid var(--border); }
+  svg{ width:100%; height:100%; display:block; background:var(--panel); }
+  .status{ position:absolute; left:12px; bottom:12px; background:#0b0f14d9; color:#cbd3db; border:1px solid var(--border); border-radius:8px; padding:.3rem .5rem; font-size:.85rem; pointer-events:none; }
+
+  /* Nodos */
+  .node .body{ filter:drop-shadow(0 8px 18px rgba(0,0,0,.25)); }
+  .node.selected .body{ stroke:#6ea8ff; stroke-width:2; }
+
+  /* Puertos */
+  .port{ fill:#9aa7b5; stroke:#2b3440; stroke-width:1; cursor:crosshair; pointer-events:all; }
+  .port:hover{ fill:#dbe7f3; }
+  .port-hit{ fill:transparent; pointer-events:all; }
+
+  /* Cables */
+  .wire{ stroke:#86d993; stroke-width:2.6; fill:none; filter:drop-shadow(0 6px 10px rgba(21,60,30,.3)); }
+  .wire.pending{ stroke:#ffd27f; stroke-dasharray:6 6; }
+
+  /* Paleta */
+  .palette{ grid-area:palette; display:flex; flex-direction:column; gap:.6rem; padding:.8rem; background:var(--surface); }
+  .search{ padding:.6rem .7rem; border-radius:8px; border:1px solid var(--border); background:var(--panel); color:var(--text); }
+  .list{ overflow:auto; border:1px solid var(--border); border-radius:10px; background:var(--panel); }
+  .item{ display:flex; align-items:center; gap:.6rem; padding:.6rem .7rem; border-bottom:1px solid var(--border); cursor:grab; }
+  .item:last-child{ border-bottom:0 } .item:hover{ background:#0f141b }
+  .thumb{ width:36px; height:28px; border-radius:6px; background:#1a2028; display:grid; place-items:center; }
+  .item h4{ margin:0; font-size:.95rem; } .item p{ margin:0; color:var(--muted); font-size:.82rem; }
+  .hint{ color:#cbd3db; font-size:.85rem; margin-top:.2rem; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <strong>Loop-i Lab — Editor</strong>
+    <span style="flex:1"></span>
+    <button class="btn" id="btnCenter" title="Centrar vista">Centrar</button>
+
+    <!-- Deshacer / Rehacer con íconos -->
+    <button class="btn icon" id="btnUndo" title="Deshacer (Ctrl/Cmd+Z)" aria-label="Deshacer">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8 3a5 5 0 0 0-4.546 2.916.5.5 0 0 1-.908-.417A6 6 0 0 1 14 8a6 6 0 0 1-10.427 3.503.5.5 0 1 1 .854-.52A5 5 0 1 0 8 3z"/>
+        <path fill-rule="evenodd" d="M7.854 1.146a.5.5 0 0 1 0 .708L5.707 4H10.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.498.498 0 0 1-.146-.354v-.002c0-.13.053-.26.146-.354l3-3a.5.5 0 0 1 .708 0z"/>
+      </svg>
+    </button>
+    <button class="btn icon" id="btnRedo" title="Rehacer (Ctrl/Cmd+Y)" aria-label="Rehacer">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8 3a5 5 0 0 1 4.546 2.916.5.5 0 0 0 .908-.417A6 6 0 0 0 2 8a6 6 0 0 0 10.427 3.503.5.5 0 1 0-.854-.52A5 5 0 1 1 8 3z"/>
+        <path fill-rule="evenodd" d="M8.146 1.146a.5.5 0 0 0 0 .708L10.293 4H5.5a.5.5 0 0 0 0 1h4.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.498.498 0 0 0 .146-.354v-.002a.498.498 0 0 0-.146-.354l-3-3a.5.5 0 0 0-.708 0z"/>
+      </svg>
+    </button>
+
+    <button class="btn" id="btnExport">Exportar JSON</button>
+    <button class="btn primary" id="btnSave">Guardar</button>
+    <button class="btn" id="btnLoad">Cargar</button>
+  </div>
+
+  <div class="canvas-wrap" id="canvasWrap">
+    <svg id="stage" tabindex="0" aria-label="Lienzo interactivo">
+      <defs>
+        <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
+          <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#1e242b" stroke-width="1" />
+        </pattern>
+        <pattern id="gridBold" width="80" height="80" patternUnits="userSpaceOnUse">
+          <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#222a33" stroke-width="1.2" />
+        </pattern>
+      </defs>
+      <rect x="-100000" y="-100000" width="200000" height="200000" fill="url(#grid)" />
+      <rect x="-100000" y="-100000" width="200000" height="200000" fill="url(#gridBold)" />
+      <!-- wires debajo; nodos arriba -->
+      <g id="wires"></g>
+      <g id="nodes"></g>
+    </svg>
+    <div class="status" id="status">
+      Clic en componente = seleccionar (borde celeste). Supr/Backspace elimina.  
+      Clic en puerto → cable temporal; clic en otro puerto → cable creado. ESC o fondo cancelan.  
+      Deshacer: Ctrl/Cmd+Z • Rehacer: Ctrl/Cmd+Y/Shift+Z. Pan invertido (derecho/rueda), Zoom (rueda), Snap: 8px.
+    </div>
+  </div>
+
+  <aside class="palette">
+    <input id="search" class="search" placeholder="Buscar componente..." />
+    <div class="list" id="list"></div>
+    <div class="hint">Arrastra componentes al lienzo. Selecciona con clic. Supr elimina. Usa deshacer/rehacer.</div>
+  </aside>
+
+<script>
+/* ===== Estado + Historial ===== */
+const state = {
+  nodes: [],               // {id, type, x, y, _ports:[{x,y}]}
+  wires: [],               // {id, a:{nodeId,port}, b:{nodeId,port}}
+  pan: {x:0,y:0},
+  zoom: 1,
+  selected: null,
+  tmpWire: null            // {from, pathEl}
+};
+const history = { past: [], future: [] };
+
+function snapshot(){
+  history.past.push(JSON.stringify({nodes:state.nodes, wires:state.wires, selected:state.selected}));
+  history.future.length = 0;
+}
+function undo(){
+  if(!history.past.length) return;
+  const current = JSON.stringify({nodes:state.nodes, wires:state.wires, selected:state.selected});
+  history.future.push(current);
+  const prev = JSON.parse(history.past.pop());
+  state.nodes = prev.nodes||[];
+  state.wires = prev.wires||[];
+  state.selected = prev.selected||null;
+  cancelTmpWire(true);
+  render();
+}
+function redo(){
+  if(!history.future.length) return;
+  const current = JSON.stringify({nodes:state.nodes, wires:state.wires, selected:state.selected});
+  history.past.push(current);
+  const next = JSON.parse(history.future.pop());
+  state.nodes = next.nodes||[];
+  state.wires = next.wires||[];
+  state.selected = next.selected||null;
+  cancelTmpWire(true);
+  render();
+}
+
+/* ===== SVG & util ===== */
+const stage = document.getElementById('stage');
+const G_NODES = document.getElementById('nodes');
+const G_WIRES = document.getElementById('wires');
+const snap=8;
+
+function elSVG(tag, attrs){ const e=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function rect(g,x,y,w,h,fill){ const el=elSVG('rect',{x,y,width:w,height:h,rx:8,ry:8,fill,stroke:'#2b3440'}); el.classList.add('body'); g.appendChild(el); }
+function circle(g,cx,cy,r,fill){ g.appendChild(elSVG('circle',{cx,cy,r,fill,stroke:'#2b3440'})); }
+function text(g,x,y,t,fs){ const el=elSVG('text',{x,y,fill:'#e6e6e6','font-size':fs||10,'font-weight':700}); el.textContent=t; g.appendChild(el); }
+function clientToWorld(cx,cy){
+  const r=stage.getBoundingClientRect();
+  return { x:(cx-r.left)/state.zoom + state.pan.x, y:(cy-r.top)/state.zoom + state.pan.y };
+}
+const snapRound = v => Math.round(v/snap)*snap;
+
+/* ===== Librería ===== */
+const LIB = [
+  {type:'LED', w:48, h:24, ports:[{x:6,y:12},{x:42,y:12}],
+   draw:(g)=>{ rect(g,0,0,48,24,'#0f141b'); circle(g,12,12,6,'#e63946'); circle(g,36,12,6,'#2ac36e'); }},
+  {type:'Resistor', w:64, h:20, ports:[{x:6,y:10},{x:58,y:10}],
+   draw:(g)=>{ rect(g,0,0,64,20,'#0f141b'); rect(g,22,4,20,12,'#c8a86b'); rect(g,27,4,2,12,'#6b8ec8'); rect(g,33,4,2,12,'#9b4dca'); }},
+  {type:'Button', w:48, h:32, ports:[{x:6,y:16},{x:42,y:16}],
+   draw:(g)=>{ rect(g,0,0,48,32,'#0f141b'); circle(g,24,16,10,'#cbd3db'); }},
+  {type:'ArduinoUNO', w:120, h:80, ports:[{x:10,y:10},{x:10,y:70},{x:110,y:10},{x:110,y:70}],
+   draw:(g)=>{ rect(g,0,0,120,80,'#134e7a'); text(g,10,18,'UNO',12); }},
+];
+
+/* ===== Render principal ===== */
+function render(){
+  stage.setAttribute('viewBox', `${-state.pan.x} ${-state.pan.y} ${stage.clientWidth/state.zoom} ${stage.clientHeight/state.zoom}`);
+
+  // --- NODOS ---
+  G_NODES.innerHTML='';
+  for(const n of state.nodes){
+    const lib=LIB.find(l=>l.type===n.type);
+    const g=elSVG('g',{class:'node', transform:`translate(${n.x},${n.y})`});
+    if(state.selected===n.id) g.classList.add('selected');
+
+    const body=elSVG('g',{}); lib.draw(body); g.appendChild(body);
+
+    // puertos (clicables)
+    n._ports=[];
+    lib.ports.forEach((p,idx)=>{
+      const hit=elSVG('circle',{cx:p.x, cy:p.y, r:10, class:'port-hit'});
+      const port=elSVG('circle',{cx:p.x, cy:p.y, r:4,  class:'port'});
+      hit.dataset.node=n.id; hit.dataset.port=idx;
+      port.dataset.node=n.id; port.dataset.port=idx;
+      hit.addEventListener('click', onPortClick);
+      port.addEventListener('click', onPortClick);
+      g.appendChild(hit); g.appendChild(port);
+      n._ports.push({x:p.x,y:p.y});
+    });
+
+    // selección
+    g.addEventListener('click', (e)=>{ e.stopPropagation(); state.selected=n.id; render(); });
+
+    // drag nodo (evita puertos)
+    g.addEventListener('pointerdown', e=>{
+      if(e.target.classList.contains('port') || e.target.classList.contains('port-hit')) return;
+      startDragNode(e,n);
+    });
+
+    G_NODES.appendChild(g);
+  }
+
+  // --- WIRES ---
+  G_WIRES.innerHTML='';
+  for(const w of state.wires){
+    const A = worldPort(w.a), B = worldPort(w.b);
+    G_WIRES.appendChild(elSVG('path',{d:bezierPath(A,B), class:'wire'}));
+  }
+  if(state.tmpWire?.pathEl) G_WIRES.appendChild(state.tmpWire.pathEl);
+}
+
+/* ===== Helpers cables ===== */
+function worldPort(ref){
+  const n=state.nodes.find(n=>n.id===ref.nodeId);
+  const p=n? n._ports[ref.port] : {x:0,y:0};
+  return {x:n.x+p.x, y:n.y+p.y};
+}
+function bezierPath(A,B){
+  const dx=Math.abs(B.x-A.x), c=Math.max(40, dx*0.6);
+  return `M ${A.x} ${A.y} C ${A.x+c} ${A.y}, ${B.x-c} ${B.y}, ${B.x} ${B.y}`;
+}
+
+/* ===== Paleta (drag & drop) ===== */
+const list=document.getElementById('list');
+function renderPalette(filter=''){
+  list.innerHTML='';
+  LIB.filter(l=>l.type.toLowerCase().includes(filter.toLowerCase())).forEach(l=>{
+    const row=document.createElement('div'); row.className='item'; row.draggable=true;
+    row.addEventListener('dragstart', e=> e.dataTransfer.setData('text/plain', l.type));
+    const th=document.createElement('div'); th.className='thumb';
+    th.innerHTML=l.type==='LED'?'💡':l.type==='Resistor'?'〽️':l.type==='Button'?'🔘':'🟦';
+    const info=document.createElement('div'); info.innerHTML=`<h4>${l.type}</h4><p>${l.w}×${l.h}px</p>`;
+    row.appendChild(th); row.appendChild(info); list.appendChild(row);
+  });
+}
+renderPalette();
+document.getElementById('search').addEventListener('input', e=> renderPalette(e.target.value));
+
+const wrap=document.getElementById('canvasWrap');
+wrap.addEventListener('dragover', e=> e.preventDefault());
+wrap.addEventListener('drop', e=>{
+  e.preventDefault();
+  const type=e.dataTransfer.getData('text/plain'); if(!type) return;
+  const pt=clientToWorld(e.clientX,e.clientY);
+  const lib=LIB.find(l=>l.type===type);
+  const id='n'+Math.random().toString(36).slice(2,9);
+  snapshot();
+  state.nodes.push({id,type,x:snapRound(pt.x-lib.w/2),y:snapRound(pt.y-lib.h/2)});
+  state.selected=id; render();
+});
+
+/* ===== Drag nodos ===== */
+let drag=null;
+function startDragNode(e,node){
+  e.stopPropagation();
+  drag={node, ox:node.x, oy:node.y, cx:e.clientX, cy:e.clientY};
+  window.addEventListener('pointermove', onDragNode);
+  window.addEventListener('pointerup', stopDragNode, {once:true});
+  snapshot(); // para undo/redo del movimiento
+}
+function onDragNode(e){
+  if(!drag) return;
+  const dx=(e.clientX-drag.cx)/state.zoom, dy=(e.clientY-drag.cy)/state.zoom;
+  drag.node.x=snapRound(drag.ox+dx);
+  drag.node.y=snapRound(drag.oy+dy);
+  render();
+}
+function stopDragNode(){ drag=null; window.removeEventListener('pointermove', onDragNode); }
+
+/* ===== Selección / eliminar / atajos ===== */
+stage.addEventListener('click', ()=>{ state.selected=null; render(); });
+
+window.addEventListener('keydown', (e)=>{
+  const mod = e.ctrlKey || e.metaKey;
+
+  // Undo/Redo
+  if(mod && e.key.toLowerCase()==='z'){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); return; }
+  if(mod && e.key.toLowerCase()==='y'){ e.preventDefault(); redo(); return; }
+
+  // Eliminar seleccionado (nodo)
+  if((e.key==='Delete' || e.key==='Backspace') && state.selected){
+    snapshot();
+    const id=state.selected;
+    state.nodes = state.nodes.filter(n=>n.id!==id);
+    state.wires = state.wires.filter(w=>w.a.nodeId!==id && w.b.nodeId!==id);
+    state.selected=null; render();
+  }
+});
+
+/* ===== Pan / Zoom (pan invertido) ===== */
+let isPanning=false, panStart={x:0,y:0}, clientStart={x:0,y:0};
+stage.addEventListener('mousedown', e=>{
+  if(e.button===1 || e.button===2){ // rueda o botón derecho
+    isPanning=true; panStart={...state.pan}; clientStart={x:e.clientX,y:e.clientY}; e.preventDefault();
+  }
+});
+window.addEventListener('mousemove', e=>{
+  if(!isPanning) return;
+  const dx=(e.clientX-clientStart.x)/state.zoom;
+  const dy=(e.clientY-clientStart.y)/state.zoom;
+  state.pan={x: panStart.x + dx, y: panStart.y + dy}; // “jalar hoja”
+  render();
+});
+window.addEventListener('mouseup', ()=> isPanning=false);
+
+stage.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const delta=-Math.sign(e.deltaY)*0.1;
+  const old=state.zoom; const nz=Math.min(3, Math.max(.3, old+delta));
+  const p=clientToWorld(e.clientX,e.clientY);
+  state.pan.x = p.x - (p.x - state.pan.x)*(old/nz);
+  state.pan.y = p.y - (p.y - state.pan.y)*(old/nz);
+  state.zoom=nz; render();
+},{passive:false});
+
+/* ===== Cableado por clic (con undo/redo) ===== */
+function onPortClick(e){
+  e.stopPropagation();
+  const nodeId=e.target.dataset.node;
+  const port=parseInt(e.target.dataset.port,10);
+
+  // Iniciar cable temporal
+  if(!state.tmpWire){
+    state.tmpWire = { from:{nodeId,port}, pathEl: elSVG('path',{class:'wire pending'}) };
+    const A=worldPort(state.tmpWire.from);
+    state.tmpWire.pathEl.setAttribute('d', bezierPath(A,A));
+    G_WIRES.appendChild(state.tmpWire.pathEl);
+    window.addEventListener('mousemove', onWireMove);
+    window.addEventListener('keydown', onEscCancel);
+    stage.addEventListener('click', onStageCancelOnce, {once:true});
+    return;
+  }
+
+  // Confirmar cable
+  const from=state.tmpWire.from;
+  if(from.nodeId===nodeId && from.port===port){ cancelTmpWire(); render(); return; }
+  snapshot(); // deshacer creación del cable
+  const id='w'+Math.random().toString(36).slice(2,9);
+  state.wires.push({id, a:from, b:{nodeId,port}});
+  cancelTmpWire(); render();
+}
+function onWireMove(e){
+  if(!state.tmpWire) return;
+  const A=worldPort(state.tmpWire.from);
+  const P=clientToWorld(e.clientX,e.clientY);
+  state.tmpWire.pathEl.setAttribute('d', bezierPath(A,P));
+}
+function onEscCancel(e){ if(e.key==='Escape'){ cancelTmpWire(); render(); } }
+function onStageCancelOnce(e){
+  const t=e.target;
+  if(t.classList.contains('port')||t.classList.contains('port-hit')) return; // si fue puerto, no canceles
+  cancelTmpWire(); render();
+}
+function cancelTmpWire(silent=false){
+  if(!state.tmpWire) return;
+  if(state.tmpWire.pathEl?.parentNode) state.tmpWire.pathEl.parentNode.removeChild(state.tmpWire.pathEl);
+  state.tmpWire=null;
+  window.removeEventListener('mousemove', onWireMove);
+  window.removeEventListener('keydown', onEscCancel);
+  if(!silent) {/* feedback opcional */}
+}
+
+/* ===== Guardar / Cargar / Exportar ===== */
+document.getElementById('btnSave').onclick = ()=>{
+  localStorage.setItem('loopi-demo', JSON.stringify({nodes:state.nodes, wires:state.wires}));
+  flash('Guardado en localStorage');
+};
+document.getElementById('btnLoad').onclick = ()=>{
+  const raw=localStorage.getItem('loopi-demo'); if(!raw) return flash('No hay guardado previo');
+  const data=JSON.parse(raw);
+  snapshot();
+  state.nodes=data.nodes||[]; state.wires=data.wires||[]; state.selected=null;
+  cancelTmpWire(true);
+  render(); flash('Proyecto cargado');
+};
+document.getElementById('btnExport').onclick = ()=>{
+  const blob=new Blob([JSON.stringify({nodes:state.nodes,wires:state.wires},null,2)], {type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='loopi-demo.json'; a.click();
+};
+document.getElementById('btnCenter').onclick = ()=>{ state.pan={x:-200,y:-120}; state.zoom=1; render(); };
+document.getElementById('btnUndo').onclick = ()=> undo();
+document.getElementById('btnRedo').onclick = ()=> redo();
+
+function flash(msg){ const el=document.getElementById('status'); el.textContent=msg; setTimeout(()=> el.textContent='Clic en componente = seleccionar (borde celeste). Supr/Backspace elimina. Clic en puerto → cable temporal; clic en otro puerto → cable creado. ESC o fondo cancelan. Deshacer: Ctrl/Cmd+Z • Rehacer: Ctrl/Cmd+Y/Shift+Z. Pan invertido (derecho/rueda), Zoom (rueda), Snap: 8px.', 1600); }
+
+/* ===== Init ===== */
+render();
+
+/* ===== Paleta inicial ===== */
+const search = document.getElementById('search');
+search.addEventListener('input', e=> renderPalette(e.target.value));
+renderPalette();
+</script>
+</body>
+</html>
