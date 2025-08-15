@@ -31,15 +31,17 @@
       --muted:#a0a0a0;        /* texto secundario */
       --card:#1a1d21;         /* tarjetas */
       --border:#21262d;       /* bordes */
+      --header-h: 64px;       /* altura del header para compensar el sticky */
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; } /* Desplazamiento suave nativo */
     body { margin:0; font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background: var(--bg); color: var(--text); line-height:1.6; }
     a { color: inherit; text-decoration: none; }
     .container{ width:min(1120px,92%); margin-inline:auto; }
 
     /* Header */
     header{ background: var(--brand); color:white; box-shadow:0 4px 12px rgba(0,0,0,.4); position:sticky; top:0; z-index:30; }
-    .nav{ display:flex; align-items:center; justify-content:space-between; padding:1rem 0; }
+    .nav{ display:flex; align-items:center; justify-content:space-between; padding:0 calc(0.04 * 100vw); min-height: var(--header-h); }
     .logo{ font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:.5rem; }
     nav ul{ list-style:none; display:flex; gap:1rem; margin:0; padding:0; align-items:center; }
     nav a{ font-weight:600; }
@@ -77,6 +79,9 @@
 
     footer{ background: #080a0d; color:#8ea1b2; padding:2rem 0; border-top:1px solid var(--border); }
     footer .links{ display:flex; gap:1rem; flex-wrap:wrap; }
+
+    /* Compensación por header sticky: las secciones tienen margen de scroll */
+    section[id], .list[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
 
     @media (max-width: 900px){
       .split{ grid-template-columns:1fr; }
@@ -194,7 +199,7 @@ void loop(){
     <div class="container">
       <h2>Qué incluye el MVP</h2>
       <div class="kv">
-        <div class="list">
+        <div class="list" id="componentes">
           <strong>Componentes iniciales</strong>
           <ul>
             <li>LED, resistencia, botón, potenciómetro</li>
@@ -202,21 +207,21 @@ void loop(){
             <li>Sensores simples (p. ej., DHT simulado)</li>
           </ul>
         </div>
-        <div class="list">
+        <div class="list" id="placas">
           <strong>Placas y energía</strong>
           <ul>
             <li>Arduino UNO (base), ESP32 (mapeo inicial)</li>
             <li>Fuentes 3.3V/5V/9V/12V y GND (simulados)</li>
           </ul>
         </div>
-        <div class="list">
+        <div class="list" id="programacion">
           <strong>Programación</strong>
           <ul>
             <li>Bloques básicos: IO, control, variables, map</li>
             <li>Vista C++ y exportación .ino</li>
           </ul>
         </div>
-        <div class="list">
+        <div class="list" id="limitaciones">
           <strong>Limitaciones del MVP</strong>
           <ul>
             <li>No emula el MCU real; simulación visual equivalente</li>
@@ -282,7 +287,41 @@ void loop(){
   </footer>
 
   <script>
+    // Año dinámico
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Scroll suave con compensación (solo para enlaces internos #hash)
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const header = document.querySelector('header');
+      const headerH = getComputedStyle(document.documentElement).getPropertyValue('--header-h').trim() || '64px';
+      const headerPx = parseInt(headerH, 10) || (header ? header.offsetHeight : 64);
+
+      document.querySelectorAll('a[href^="#"]').forEach(a=>{
+        a.addEventListener('click', (e)=>{
+          const id = a.getAttribute('href');
+          // ignorar # vacío
+          if(!id || id === '#') return;
+          const target = document.querySelector(id);
+          if(!target) return; // si no existe, no interceptar
+          e.preventDefault();
+
+          // Coordenada objetivo compensando el header sticky
+          const rect = target.getBoundingClientRect();
+          const absoluteY = window.pageYOffset + rect.top;
+          const y = absoluteY - (headerPx + 12); // + margen de respiro
+
+          if(prefersReduced){
+            window.scrollTo(0, y);
+          }else{
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+
+          // Actualiza el hash sin "saltos" bruscos (opcional)
+          history.pushState(null, '', id);
+        });
+      });
+    })();
   </script>
 </body>
 </html>
