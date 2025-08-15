@@ -80,7 +80,7 @@
     <button class="btn icon" id="btnUndo" title="Deshacer (Ctrl/Cmd+Z)" aria-label="Deshacer">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M8 3a5 5 0 0 0-4.546 2.916.5.5 0 0 1-.908-.417A6 6 0 0 1 14 8a6 6 0 0 1-10.427 3.503.5.5 0 1 1 .854-.52A5 5 0 1 0 8 3z"/>
-        <path fill-rule="evenodd" d="M7.854 1.146a.5.5 0 0 1 0 .708L5.707 4H10.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.498.498 0 0 1-.146-.354v-.002c0-.13.053-.26.146-.354l3-3a.5.5 0 0 1 .708 0z"/>
+        <path fill-rule="evenodd" d="M7.854 1.146a.5.5 0 0 1 0 .708L5.707 4H10.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.498.498 0 0 1-.146-.354v-.002c0-.13.053-.26.146-.354l-3-3a.5.5 0 0 1 .708 0z"/>
       </svg>
     </button>
     <button class="btn icon" id="btnRedo" title="Rehacer (Ctrl/Cmd+Y)" aria-label="Rehacer">
@@ -111,9 +111,9 @@
       <g id="nodes"></g>
     </svg>
     <div class="status" id="status">
-      Arrastra desde paleta y suelta: cae EXACTO bajo el puntero (Shift/Ctrl/⌘ para snap).  
+      Drop y drag **precisos** sin deriva (usa CTM del SVG).  
       Clic en puerto → cable temporal; clic en otro puerto → cable creado. ESC o fondo cancelan.  
-      Deshacer: Ctrl/Cmd+Z • Rehacer: Ctrl/Cmd+Y/Shift+Z. Pan invertido, Zoom al puntero.
+      Deshacer: Ctrl/Cmd+Z • Rehacer: Ctrl/Cmd+Y/Shift+Z. Pan invertido, Zoom al puntero. Snap: 8px (solo si mantienes Shift/Ctrl/⌘ al soltar).
     </div>
   </div>
 
@@ -135,6 +135,27 @@ const state = {
 };
 const history = { past: [], future: [] };
 
+/* ===== Util: coordenadas precisas con CTM ===== */
+const stage = document.getElementById('stage');
+function clientToSVG(clientX, clientY){
+  const pt = stage.createSVGPoint();
+  pt.x = clientX; pt.y = clientY;
+  const mat = stage.getScreenCTM();
+  // En algunos navegadores, mat puede ser null si el SVG no está en el DOM aún.
+  if(!mat) return {x:0,y:0};
+  const inv = mat.inverse();
+  const svgP = pt.matrixTransform(inv);
+  return { x: svgP.x, y: svgP.y };
+}
+
+function elSVG(tag, attrs){ const e=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function rect(g,x,y,w,h,fill){ const el=elSVG('rect',{x,y,width:w,height:h,rx:8,ry:8,fill,stroke:'#2b3440'}); el.classList.add('body'); g.appendChild(el); }
+function circle(g,cx,cy,r,fill){ g.appendChild(elSVG('circle',{cx,cy,r,fill,stroke:'#2b3440'})); }
+function text(g,x,y,t,fs){ const el=elSVG('text',{x,y,fill:'#e6e6e6','font-size':fs||10,'font-weight':700}); el.textContent=t; g.appendChild(el); }
+const snap = 8;
+const snapRound = v => Math.round(v/snap)*snap;
+
+/* ===== Historial ===== */
 function snapshot(){
   history.past.push(JSON.stringify({nodes:state.nodes, wires:state.wires, selected:state.selected}));
   history.future.length = 0;
@@ -162,22 +183,6 @@ function redo(){
   render();
 }
 
-/* ===== SVG & util ===== */
-const stage = document.getElementById('stage');
-const G_NODES = document.getElementById('nodes');
-const G_WIRES = document.getElementById('wires');
-const snap=8;
-
-function elSVG(tag, attrs){ const e=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
-function rect(g,x,y,w,h,fill){ const el=elSVG('rect',{x,y,width:w,height:h,rx:8,ry:8,fill,stroke:'#2b3440'}); el.classList.add('body'); g.appendChild(el); }
-function circle(g,cx,cy,r,fill){ g.appendChild(elSVG('circle',{cx,cy,r,fill,stroke:'#2b3440'})); }
-function text(g,x,y,t,fs){ const el=elSVG('text',{x,y,fill:'#e6e6e6','font-size':fs||10,'font-weight':700}); el.textContent=t; g.appendChild(el); }
-function clientToWorld(cx,cy){
-  const r=stage.getBoundingClientRect();
-  return { x:(cx-r.left)/state.zoom + state.pan.x, y:(cy-r.top)/state.zoom + state.pan.y };
-}
-const snapRound = v => Math.round(v/snap)*snap;
-
 /* ===== Librería ===== */
 const LIB = [
   {type:'LED', w:48, h:24, ports:[{x:6,y:12},{x:42,y:12}],
@@ -192,9 +197,11 @@ const LIB = [
 
 /* ===== Render principal ===== */
 function render(){
+  // El viewBox define la relación mundo <-> pantalla
   stage.setAttribute('viewBox', `${-state.pan.x} ${-state.pan.y} ${stage.clientWidth/state.zoom} ${stage.clientHeight/state.zoom}`);
 
-  // --- NODOS ---
+  // Nodos
+  const G_NODES = document.getElementById('nodes');
   G_NODES.innerHTML='';
   for(const n of state.nodes){
     const lib=LIB.find(l=>l.type===n.type);
@@ -219,7 +226,7 @@ function render(){
     // selección
     g.addEventListener('click', (e)=>{ e.stopPropagation(); state.selected=n.id; render(); });
 
-    // drag nodo (con snap mientras mueves)
+    // drag nodo
     g.addEventListener('pointerdown', e=>{
       if(e.target.classList.contains('port') || e.target.classList.contains('port-hit')) return;
       startDragNode(e,n);
@@ -228,7 +235,8 @@ function render(){
     G_NODES.appendChild(g);
   }
 
-  // --- WIRES ---
+  // Cables
+  const G_WIRES = document.getElementById('wires');
   G_WIRES.innerHTML='';
   for(const w of state.wires){
     const A = worldPort(w.a), B = worldPort(w.b);
@@ -264,7 +272,7 @@ function renderPalette(filter=''){
 renderPalette();
 document.getElementById('search').addEventListener('input', e=> renderPalette(e.target.value));
 
-/* ——— Drop exacto sobre el SVG ——— */
+/* ——— Drop exacto sobre el SVG con CTM ——— */
 stage.addEventListener('dragover', e=> {
   e.preventDefault();
   if(e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
@@ -272,39 +280,37 @@ stage.addEventListener('dragover', e=> {
 stage.addEventListener('drop', e=>{
   e.preventDefault();
   const type=e.dataTransfer?.getData('text/plain'); if(!type) return;
-  const pt=clientToWorld(e.clientX,e.clientY);
-  const lib=LIB.find(l=>l.type===type);
+  const lib=LIB.find(l=>l.type===type); if(!lib) return;
+
+  const pt = clientToSVG(e.clientX, e.clientY); // coordenadas mundo precisas
   const id='n'+Math.random().toString(36).slice(2,9);
   snapshot();
 
-  // Centro del nodo bajo el cursor sin snap
   let x = pt.x - lib.w/2;
   let y = pt.y - lib.h/2;
-
-  // Si el usuario mantiene Shift/Ctrl/⌘ al soltar, aplicamos snap
-  if(e.shiftKey || e.ctrlKey || e.metaKey){
-    x = snapRound(x);
-    y = snapRound(y);
-  }
+  if(e.shiftKey || e.ctrlKey || e.metaKey){ x = snapRound(x); y = snapRound(y); }
 
   state.nodes.push({id,type,x,y});
   state.selected=id; render();
 });
 
-/* ===== Drag nodos (snap mientras mueves) ===== */
+/* ===== Drag nodos (usando CTM, sin deriva) ===== */
 let drag=null;
 function startDragNode(e,node){
   e.stopPropagation();
-  drag={node, ox:node.x, oy:node.y, cx:e.clientX, cy:e.clientY};
+  const start = clientToSVG(e.clientX,e.clientY);
+  drag={node, start, ox:node.x, oy:node.y};
   window.addEventListener('pointermove', onDragNode);
   window.addEventListener('pointerup', stopDragNode, {once:true});
   snapshot();
 }
 function onDragNode(e){
   if(!drag) return;
-  const dx=(e.clientX-drag.cx)/state.zoom, dy=(e.clientY-drag.cy)/state.zoom;
-  drag.node.x=snapRound(drag.ox+dx);
-  drag.node.y=snapRound(drag.oy+dy);
+  const curr = clientToSVG(e.clientX,e.clientY);
+  const dx = curr.x - drag.start.x;
+  const dy = curr.y - drag.start.y;
+  drag.node.x = snapRound(drag.ox + dx);
+  drag.node.y = snapRound(drag.oy + dy);
   render();
 }
 function stopDragNode(){ drag=null; window.removeEventListener('pointermove', onDragNode); }
@@ -333,21 +339,27 @@ stage.addEventListener('mousedown', e=>{
 });
 window.addEventListener('mousemove', e=>{
   if(!isPanning) return;
-  const dx=(e.clientX-clientStart.x)/state.zoom;
-  const dy=(e.clientY-clientStart.y)/state.zoom;
-  state.pan={x: panStart.x + dx, y: panStart.y + dy};
+  // Convertimos ambos puntos a mundo y tomamos la diferencia
+  const a = clientToSVG(clientStart.x, clientStart.y);
+  const b = clientToSVG(e.clientX, e.clientY);
+  const dx = (b.x - a.x);
+  const dy = (b.y - a.y);
+  // Pan invertido (jalar el lienzo)
+  state.pan = { x: panStart.x + dx, y: panStart.y + dy };
   render();
 });
 window.addEventListener('mouseup', ()=> isPanning=false);
 
-/* ===== Zoom al puntero ===== */
+/* ===== Zoom al puntero (usando CTM) ===== */
 stage.addEventListener('wheel', (e)=>{
   e.preventDefault();
   let deltaY = e.deltaY;
   if(e.deltaMode === 1) deltaY *= 16;
   else if(e.deltaMode === 2) deltaY *= window.innerHeight;
 
-  const p = clientToWorld(e.clientX, e.clientY);
+  // Punto fijo (mundo) bajo el cursor ANTES del zoom
+  const p = clientToSVG(e.clientX, e.clientY);
+
   const old = state.zoom;
   const base = e.ctrlKey ? 1.0012 : 1.0015;
   let target = old * Math.pow(base, -deltaY);
@@ -355,8 +367,10 @@ stage.addEventListener('wheel', (e)=>{
   target = Math.min(maxZ, Math.max(minZ, target));
   const factor = target / old; if(factor === 1) return;
 
+  // Ajustar pan para mantener p fijo en pantalla
   state.pan.x = p.x - (p.x - state.pan.x) * factor;
   state.pan.y = p.y - (p.y - state.pan.y) * factor;
+
   state.zoom = target;
   render();
 },{passive:false});
@@ -371,7 +385,7 @@ function onPortClick(e){
     state.tmpWire = { from:{nodeId,port}, pathEl: elSVG('path',{class:'wire pending'}) };
     const A=worldPort(state.tmpWire.from);
     state.tmpWire.pathEl.setAttribute('d', bezierPath(A,A));
-    G_WIRES.appendChild(state.tmpWire.pathEl);
+    document.getElementById('wires').appendChild(state.tmpWire.pathEl);
     window.addEventListener('mousemove', onWireMove);
     window.addEventListener('keydown', onEscCancel);
     stage.addEventListener('click', onStageCancelOnce, {once:true});
@@ -388,7 +402,7 @@ function onPortClick(e){
 function onWireMove(e){
   if(!state.tmpWire) return;
   const A=worldPort(state.tmpWire.from);
-  const P=clientToWorld(e.clientX,e.clientY);
+  const P=clientToSVG(e.clientX,e.clientY);
   state.tmpWire.pathEl.setAttribute('d', bezierPath(A,P));
 }
 function onEscCancel(e){ if(e.key==='Escape'){ cancelTmpWire(); render(); } }
@@ -403,6 +417,7 @@ function cancelTmpWire(silent=false){
   state.tmpWire=null;
   window.removeEventListener('mousemove', onWireMove);
   window.removeEventListener('keydown', onEscCancel);
+  if(!silent) {}
 }
 
 /* ===== Guardar / Cargar / Exportar ===== */
@@ -429,13 +444,13 @@ document.getElementById('btnRedo').onclick = ()=> redo();
 function flash(msg){
   const el=document.getElementById('status');
   el.textContent=msg;
-  setTimeout(()=> el.textContent='Arrastra desde paleta y suelta: cae EXACTO bajo el puntero (Shift/Ctrl/⌘ para snap). Clic en puerto → cable temporal; clic en otro puerto → cable creado. ESC o fondo cancelan. Deshacer: Ctrl/Cmd+Z • Rehacer: Ctrl/Cmd+Y/Shift+Z. Pan invertido, Zoom al puntero.', 1800);
+  setTimeout(()=> el.textContent='Drop y drag precisos (CTM). Clic puerto → cable; segundo puerto → conecta. ESC/fondo cancela. Deshacer: Ctrl/Cmd+Z • Rehacer: Ctrl/Cmd+Y/Shift+Z. Pan invertido, Zoom al puntero. Snap con Shift/Ctrl/⌘ al soltar.', 1800);
 }
 
 /* ===== Init ===== */
 render();
 
-/* ===== Paleta inicial ===== */
+/* ===== Paleta ===== */
 const search = document.getElementById('search');
 search.addEventListener('input', e=> renderPalette(e.target.value));
 renderPalette();
